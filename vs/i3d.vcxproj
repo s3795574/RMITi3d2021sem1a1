@@ -155,7 +155,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\i3d_Game_Math.c" />
+    <ClCompile Include="..\src\i3d_Game_Objects.c" />
+    <ClCompile Include="..\src\i3d_Game_Render.c" />
     <ClCompile Include="..\src\main.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\i3d_config.h" />
+    <ClInclude Include="..\src\i3d_Game_Math.h" />
+    <ClInclude Include="..\src\i3d_Game_Objects.h" />
+    <ClInclude Include="..\src\i3d_Game_Render.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -9,5 +9,28 @@
     <ClCompile Include="..\src\main.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\i3d_Game_Objects.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\i3d_Game_Render.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\i3d_Game_Math.c">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\i3d_Game_Objects.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\i3d_Game_Render.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\i3d_config.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\i3d_Game_Math.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
