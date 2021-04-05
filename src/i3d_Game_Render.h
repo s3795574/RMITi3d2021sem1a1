@@ -15,8 +15,8 @@
 #endif
 
 //Rendering the ship on the screen. width and height is the size of the screen.
-extern void render_spaceShip(int width, int height, Spaceship* ship);
+extern void render_spaceShip(int width, int height, Spaceship* ship, float ship_scale_size);
 //Rendering the arana on the screen. width and height is the size of the screen.
-extern void render_arena(int width, int height, Color* color);
+extern void render_arena(int width, int height, Color* color, float arena_scale_size);
 //Rednering a circle. The radius should between 0 and 1. width and height is the size of the screen.
-extern void render_circle(int width, int height, GLfloat radius, Color* color);
+extern void render_circle(int width, int height, Asteroid* asteroid, GLfloat radius, Color* color, float circle_scale_size);

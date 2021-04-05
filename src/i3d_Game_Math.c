@@ -8,21 +8,26 @@ float getLength2D(float x, float y) {
 	return sqrtf(x * x + y * y);
 }
 
-void normalizing(Vector2D* direction) {
-	direction->length = getLength2D(direction->x, direction->y);
-	direction->x = direction->x / direction->length;
-	direction->y = direction->y / direction->length;
+float getDistance(Vector2D* point1, Vector2D* point2) {
+	return sqrtf((point2->x - point1->x) * (point2->x - point1->x) + (point2->y - point1->y) * (point2->y - point1->y));
+}
+void normalizing(Vector2D* direction, float originX, float originY) {
+	direction->length = getLength2D((direction->x - originX), (direction->y - originY));
+	direction->x = (direction->x - originX) / direction->length;
+	direction->y = (direction->y - originY) / direction->length;
 	direction->length = 1;
 }
 
 float getAngleInDegree(Vector2D* direction) {
-	return asinf(direction->y) * (180.0 / M_PI);
+	return atan2f(direction->y,direction->x) * (180.0 / M_PI);
 }
 
-void update_position(Vector2D* direction, Vector2D* position,float degree, float length) {
+void update_position(Vector2D* direction, Vector2D* position,float degree, float movement) {
 	float radian = degree /(180.0 / M_PI);
-	float deltaY = sinf(radian) * length;
-	float deltaX = cosf(radian) * length;
+	//float deltaY = sinf(radian) * movement;
+	//float deltaX = cosf(radian) * movement;
+	float deltaY = direction->y * movement;
+	float deltaX = direction->x * movement;
 	position->x = position->x + deltaX;
 	position->y = position->y + deltaY;
 }

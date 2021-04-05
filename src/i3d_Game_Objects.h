@@ -18,6 +18,7 @@ typedef struct ship2d_t {
 typedef struct asteroid {
 	Vector2D* position; //current loaction of the ship
 	Vector2D* direction; //normalize to unit vector respresenting direction
+	float vertex[60];
 	float velocity; // ship speed in pixel per second
 	float av; // angular velocity, degree per second
 	float current_degree;// postive x is 0 degree
@@ -55,10 +56,22 @@ extern void color_init(Color* color);
 //initialize arena
 extern void set_arena(Arena* arena, float left, float right, float top, float bottom);
 //Set a new position for ship
-extern void update_ship_position(Spaceship* ship2d, float length);
+extern void update_ship_position(Spaceship* ship2d, float degree, float movement);
 //Set a new angle for ship
 extern void update_ship_angle(Spaceship* ship2d, float degree);
 //checking arena and the ship. 0 is safe, 1 is warning, 2 is crash.
 extern int hit_wall(Spaceship* ship2d, Arena* arena);
-//
+//reset the ship position once the ship hit the wall
 extern int reset_ship(Spaceship* ship2d, float x, float y);
+//
+extern void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid, 
+							Vector2D* dir, Vector2D* pos, 
+							int width, int height, float vel, float degree);
+
+extern void update_asteroid_position(Asteroid* asteroid, int width, int height, float movement);
+
+extern int spaceship_asteroid_collision(Spaceship* ship2d, Asteroid* asteroid);
+
+extern void asteroids_init(Spaceship* ship2d, Asteroid asteroid[],
+							Vector2D dir[], Vector2D pos[],
+							int width, int height, float vel, float degree);
