@@ -26,3 +26,5 @@ void update_position(Vector2D* direction, Vector2D* position, float degree,float
 void update_direction(Vector2D* direction, float degree);
 
 float getDistance(Vector2D* point1, Vector2D* point2);
+//Get a random raito between the given parameter. e.g. 30 with return a value between -0.3 and 0.3.
+float random_raito(int percentage);

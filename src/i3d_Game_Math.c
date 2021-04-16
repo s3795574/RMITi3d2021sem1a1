@@ -3,6 +3,13 @@
 #include <math.h>
 
 
+float random_raito(int percentage) {
+	float ratio = (rand() % percentage) * 0.01;
+	if (rand() % 2 == 1) {
+		ratio = ratio * -1;
+	}
+	return ratio;
+}
 
 float getLength2D(float x, float y) {
 	return sqrtf(x * x + y * y);

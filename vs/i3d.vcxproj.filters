@@ -18,6 +18,12 @@
     <ClCompile Include="..\src\i3d_Game_Math.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\i3d_Game_Particle.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\i3d_Game_Text_Display.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\i3d_Game_Objects.h">
@@ -30,6 +36,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\i3d_Game_Math.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\i3d_Game_Particle.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\i3d_Game_Text_Display.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
