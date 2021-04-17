@@ -155,6 +155,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\i3d_Game_Bonus_Features.c" />
+    <ClCompile Include="..\src\i3d_Game_Bounce.c" />
     <ClCompile Include="..\src\i3d_Game_Math.c" />
     <ClCompile Include="..\src\i3d_Game_Objects.c" />
     <ClCompile Include="..\src\i3d_Game_Particle.c" />
@@ -164,6 +166,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\i3d_config.h" />
+    <ClInclude Include="..\src\i3d_Game_Bonus_Features.h" />
+    <ClInclude Include="..\src\i3d_Game_Bounce.h" />
     <ClInclude Include="..\src\i3d_Game_Math.h" />
     <ClInclude Include="..\src\i3d_Game_Objects.h" />
     <ClInclude Include="..\src\i3d_Game_Particle.h" />

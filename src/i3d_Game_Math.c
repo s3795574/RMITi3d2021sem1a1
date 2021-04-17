@@ -31,8 +31,6 @@ float getAngleInDegree(Vector2D* direction) {
 
 void update_position(Vector2D* direction, Vector2D* position,float degree, float movement) {
 	float radian = degree /(180.0 / M_PI);
-	//float deltaY = sinf(radian) * movement;
-	//float deltaX = cosf(radian) * movement;
 	float deltaY = direction->y * movement;
 	float deltaX = direction->x * movement;
 	position->x = position->x + deltaX;
@@ -42,8 +40,18 @@ void update_position(Vector2D* direction, Vector2D* position,float degree, float
 void update_direction(Vector2D* direction, float degree) {
 	float radian = degree / (180.0 / M_PI);
 	direction->x = cosf(radian);
-	//if (degree > 90 && degree < 270) {
-	//	direction->y = sinf(radian) * -1;
-	//}
 	direction->y = sinf(radian) ;
+}
+
+float get_normal_x(float x1, float x2, float distance) {
+	float nx = (x1 - x2) / distance;
+	return nx;
+}
+float get_normal_y(float y1, float y2, float distance) {
+	float ny = (y1 - y2) / distance;
+	return ny;
+}
+
+float get_dot_product(float x1, float y1, float x2, float y2) {
+	return x1 * x2 + y1 * y2;
 }

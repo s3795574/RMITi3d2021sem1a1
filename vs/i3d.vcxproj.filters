@@ -24,6 +24,12 @@
     <ClCompile Include="..\src\i3d_Game_Text_Display.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\i3d_Game_Bounce.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\i3d_Game_Bonus_Features.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\i3d_Game_Objects.h">
@@ -42,6 +48,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\i3d_Game_Text_Display.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\i3d_Game_Bounce.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\i3d_Game_Bonus_Features.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

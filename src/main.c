@@ -5,6 +5,8 @@
 #include "i3d_Game_Math.h"
 #include "i3d_Game_Particle.h"
 #include "i3d_config.h"
+#include "i3d_Game_Bounce.h"
+#include "i3d_Game_Bonus_Features.h"
 
 #if _WIN32
 #   include <Windows.h>
@@ -28,7 +30,9 @@ float g_particle_hold = 0.0f;
 float cur_time = 0.0f;
 float dt = 0;
 int current_number_of_asteroid = 1;
+int current_number_of_splited_asteroid = 0;
 int puff_index = 0;
+int explosion_index = 0;
 char* t;
 char minutes[100];
 char seconds[100];
@@ -53,6 +57,7 @@ Keyboard keyboard;
 Color arena_color;
 Color asteroids_color;
 Color puff_color;
+Color* particle_color;
 //bulllets
 Bullet bullets[NUMBER_OF_BULLETS];
 Vector2D bullets_Postion[NUMBER_OF_BULLETS];
@@ -61,6 +66,11 @@ Vector2D bullets_direction[NUMBER_OF_BULLETS];
 Particle puff[NUMBER_OF_PARTICLE_IN_PUFF];
 Vector2D puff_Postion[NUMBER_OF_PARTICLE_IN_PUFF];
 Vector2D puff_direction[NUMBER_OF_PARTICLE_IN_PUFF];
+//Explosion
+Particle_v2 particles[NUMBER_OF_PARTICLE_IN_EXPLOSION];
+Vector2D particles_Postion[NUMBER_OF_PARTICLE_IN_EXPLOSION];
+Vector2D particles_direction[NUMBER_OF_PARTICLE_IN_EXPLOSION];
+Color particles_color[NUMBER_OF_PARTICLE_IN_EXPLOSION];
 //Game log
 Game_Log game_log;
 
@@ -68,11 +78,7 @@ void on_reshape(int width, int height) {
 	glViewport(0, 0, g_screen_width, g_screen_height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	float aspect_ratio = g_screen_width / g_screen_height;
-	glOrtho(0.0, g_screen_width, 0.0, g_screen_height, 1.0, -1.0);
-	//set current window size
-	//window_init(&window, g_screen_width, g_screen_height, FULL_SCREEN);
-	
+	glOrtho(0.0, g_screen_width, 0.0, g_screen_height, 1.0, -1.0);	
 }
 void on_display()
 {
@@ -111,8 +117,6 @@ void on_display()
 		}
 	}
 
-	
-
 	/* Always check for errors! */
 	int err;
 	while ((err = glGetError()) != GL_NO_ERROR)
@@ -143,6 +147,7 @@ void on_keyboard_press(unsigned char key, int x, int y)
 		keyboard.clockwise = KEY_PRESSED;
 		break;
 	default:
+		//Retset Game
 		if (ship.active == 0) {
 			reset_ship(&ship, &window, window.width * START_POS_RATIO + arena.left, window.height * START_POS_RATIO + arena.bottom);
 			//reset asteroids
@@ -212,19 +217,25 @@ void on_idle()
 	else if (hit_wall(&ship, &arena, WARNING_RAITO) == 2) {
 		//ship hit the wall
 	}
+	//Bouns feature 1. Better Ship Movement
+	increasing_speed(&ship, &keyboard, dt, SHIP_MAX_VELOCITY, 30);
+	decreasing_speed(&ship, &keyboard, dt, SHIP_MAX_VELOCITY, 30);
 
 	//Movement of the ship
 	if (keyboard.forward == 1) {
-		update_ship_position(&ship,ship.current_degree, SHIP_VELOCITY * dt);
+		update_ship_position(&ship,ship.current_degree, ship.velocity * dt);
 		g_particle_hold += dt;
 		if (g_particle_hold > 0.15) {	
-			particle_release(&ship,&puff[puff_index], g_screen_width * 0.02f);
+			puff_release(&ship,&puff[puff_index], g_screen_width * 0.02f);
 			g_particle_hold = 0;
 			puff_index++;
 			if (puff_index >= NUMBER_OF_PARTICLE_IN_PUFF) {
 				puff_index = 0;
 			}
 		}		
+	}
+	else {
+		update_ship_position(&ship, ship.current_degree, ship.velocity * dt);
 	}
 	if (keyboard.anti_clockwise == 1) {
 		update_ship_angle(&ship, SHIP_AV * dt);
@@ -267,6 +278,7 @@ void on_idle()
 		for (int j = 0; j < NUMBER_OF_ASTEROID; j++) {
 			is_collision = bullet_asteroid_collision(&bullets[i], &asteroids[j]);
 			if (is_collision == 2) {
+				explosion_starts(&asteroids[j], particles,NUMBER_OF_PARTICLE_IN_EXPLOSION, explosion_index);
 				update_game_score(&game_log);
 			}
 		}
@@ -283,6 +295,18 @@ void on_idle()
 				puff[i].active = 0;
 			}
 			puff[i].radius = puff[i].radius * (1 - dt * PARTICLE_DECAY);
+		}
+	}
+	//Check collsion between asteriods and arena
+	for (int i = 0; i < NUMBER_OF_ASTEROID; i++) {
+		asteroid_hit_arena(&asteroids[i], &arena);
+	}
+	//check collsion between asteriods
+	for (int i = 0; i < NUMBER_OF_ASTEROID - 1; i++) {
+		for (int j = 1; j < NUMBER_OF_ASTEROID; j++) {
+			if (i != j) {
+				asteroid_hit_asteroid(&asteroids[i], &asteroids[j], &arena);
+			}	
 		}
 	}
 
@@ -309,9 +333,9 @@ void init_game() {
 	vec2d_t_init(&shipPostion, window.width * START_POS_RATIO + arena.left, window.height * START_POS_RATIO + arena.bottom);
 	//calculate the direction of the ship
 	normalizing(&shipDirection, window.width * START_POS_RATIO, window.height * START_POS_RATIO);
-	//init the ship
+	//init the ship, for the bouns feature, we set the ship speed to 0 at the beginning
 	ship2d_t_init(&ship, &shipDirection, &shipPostion, &ship_outline_color, &ship_filling_color,
-			SHIP_VELOCITY, SHIP_AV, SHIP_SCALE_SIZE * g_screen_width);
+			0, SHIP_AV, SHIP_SCALE_SIZE * g_screen_width);
 	//init asteroids
 	for (int i = 0; i < NUMBER_OF_ASTEROID; i++) {
 		launch_asteroid(&ship, &asteroids[i], &asteroid_directions[i], &asteroid_Postions[i],
@@ -327,6 +351,13 @@ void init_game() {
 	for (int i = 0; i < NUMBER_OF_PARTICLE_IN_PUFF; i++) {
 		puff_init(&ship, &puff[i], &puff_Postion[i], &window, &puff_color, g_screen_width * 0.01, PARTICLE_LIFESPAN, PARTICLE_SIZE);
 	}
+
+	explosion_init(&particles, &particles_Postion, &particles_direction, &particles_color, NUMBER_OF_PARTICLE_IN_EXPLOSION,
+		PARTICLE_LIFESPAN,PARTICLE_SIZE,PARTICLE_VELOCITY);
+
+	//for (int i = 0; i < NUMBER_OF_PARTICLE_IN_EXPLOSION; i++) {
+	//	printf("%d,%f,%f\n", i, particles[i].direction[i].x, particles[i].direction[i].y);
+	//}
 	//init keyboard stats
 	keyboard_init(&keyboard);
 }
@@ -336,8 +367,8 @@ void init(int* argc, char** argv)
 
 	glutInit(argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	//glutInitWindowPosition(300, 300);
-	//glutInitWindowSize(window.width, window.height);
+	g_screen_width = glutGet(GLUT_SCREEN_WIDTH);
+	g_screen_height = glutGet(GLUT_SCREEN_HEIGHT);
 	glutCreateWindow("Assignment 1 - s3795574");
 	glutFullScreen();
 	glutReshapeFunc(on_reshape);
@@ -348,13 +379,13 @@ void init(int* argc, char** argv)
 	glutKeyboardUpFunc(on_keyboard_release);
 
 	glutIdleFunc(on_idle);
-	g_screen_width = glutGet(GLUT_SCREEN_WIDTH);
-	g_screen_height = glutGet(GLUT_SCREEN_HEIGHT);
+
 	init_game();
 }
 
 int main(int argc, char** argv)
 {
+
 	srand(time(NULL)); //seed the random generator
 	init(&argc, argv);
 	glutMainLoop();

@@ -9,6 +9,36 @@ void vec2d_t_init(Vector2D* vector2d, float x, float y) {
 	vector2d->y = y;
 }
 
+Vector2D* vec2d_new(float x, float y) {
+	Vector2D* vector = (Vector2D*)malloc(sizeof(Vector2D));
+	if (vector != NULL)
+	{
+		vector->y = y;
+		vector->x = x;
+		return vector;
+	}
+	else
+	{
+		printf("s%", "Vector pointer is null inside vec2d_new funtion.");
+	}	
+	
+}
+
+Color* color_new() {
+	Color* color = (Color*)malloc(sizeof(Color));
+	if (color != NULL)
+	{
+		color->R = 1;
+		color->G = 1;
+		color->B = 1;
+		return color;
+	}
+	else
+	{
+		printf("s%", "Color pointer is null inside color_new funtion.");
+	}
+}
+
 void window_init(Game_Window* window, int width, int height,int full_screen) {
 	window->width = width;
 	window->height = height;
@@ -139,6 +169,7 @@ int reset_ship(Spaceship* ship2d, Game_Window* window,float x, float y) {
 	normalizing(ship2d->direction, x, y);
 	//Get the angle
 	ship2d->current_degree = getAngleInDegree(ship2d->direction);
+	ship2d->velocity = 0;
 	ship2d->active = 1;
 }
 
@@ -164,7 +195,7 @@ void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid,
 	float angle = (360 / 20) / (180.0 / M_PI);//get radian for each triangle
 	//float circle[3 * 20];//each vertex needs three values
 	for (int i = 0; i < 20; i++) {
-		float unique_ratio = random_raito(30);
+		float unique_ratio = random_raito(10);
 		asteroid->vertex[i * 3] = cosf(angle * i) * (1 + unique_ratio);//X
 		asteroid->vertex[i * 3 + 1] = sinf(angle * i) * (1 + unique_ratio); //Y
 		asteroid->vertex[i * 3 + 2] = 0; //Z is always 0 in 2D

@@ -72,7 +72,9 @@ typedef struct window_t {
 	int height;
 	int full_screen; //0 or 1
 }Game_Window;
-
+//Those functions have no use, I tried to create function similar to "new" in c++
+extern Vector2D* vec2d_new(float x, float y);
+extern Color* color_new();
 //Set the x and y in a vector. NOTE: the length is yet set, please read i3d_Game_Math.h for more.
 extern void vec2d_t_init(Vector2D* vector2d, float x, float y);
 //Set direction, position and velocity of the ship.
