@@ -53,10 +53,6 @@ void explosion_starts(Asteroid* asteroid, Particle_v2* particles, int array_size
 	for (int i = number_of_explosion; i < number_of_explosion + array_size; i++) {
 		particles[i].position->x = asteroid->position->x;
 		particles[i].position->y = asteroid->position->y;
-		//int random_degree = rand() % 360; //get a random degree
-		//float radian = random_degree / (180.0 / M_PI);//get radian from degree
-		//particles[i].direction->x = cosf(radian);
-		//particles[i].direction->y = sinf(radian);
 		particles[i].active = 1;
 	}
 }

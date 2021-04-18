@@ -29,16 +29,20 @@
 #define KEY_CLOCKWISE 100
 //Asteroid configuration
 #define ASTEROID_SCALE_SIZE 0.03//
+#define ASTEROID_DISTANCE 1920
 #define ASTEROID_VELOCITY 80 // speed in pixel/s, the velocity will be random in the range of +/- 10% of this value
 #define ASTEROID_ANGULAR_VELOCITY 20 // how fast the asterioid rotating
 #define NUMBER_OF_ASTEROID 30 // there will be four waves. each wave will release 1,2,3 and 4 asteroid respectively.
-#define WAVE_INTERVAL 5 // the time between each wave of asteroids
-#define ASTEROID_COLOR_R 0
-#define ASTEROID_COLOR_G 1
-#define ASTEROID_COLOR_B 0
+#define WAVE_INTERVAL 4 // the time between each wave of asteroids
+#define ASTEROID_COLOR_R 0.5
+#define ASTEROID_COLOR_G 0.5
+#define ASTEROID_COLOR_B 0.5
 //Decay of puff
 #define PARTICLE_DECAY 1.0f // the higher this value, the fast puff disappears
 //Bullet configuration
+#define BULLET_COLOR_R 1
+#define BULLET_COLOR_G 1
+#define BULLET_COLOR_B 1
 #define BULLET_VELOCITY 200 // speed in pixel/s, set it large to make the game eaiser
 #define NUMBER_OF_BULLETS 10 // how many bullets you could have at the same time. Large number makes the game easy because you could keep shooting.
 

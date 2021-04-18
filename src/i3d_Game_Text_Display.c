@@ -25,9 +25,9 @@ void convert_time_second(int current_time, char* seconds) {
 }
 
 void update_game_time(Game_Log* game_log, int current_time, char* minutes, char* second) {
-	convert_time_minute(current_time, minutes);
+	convert_time_minute(current_time - game_log->last_game_time, minutes);
 	game_log->minutes = minutes;
-	convert_time_second(current_time, second);
+	convert_time_second(current_time - game_log->last_game_time, second);
 	game_log->seconds = second;
 }
 
@@ -35,7 +35,7 @@ void update_game_score(Game_Log* game_log) {
 	game_log->score += 1;
 	sprintf_s(game_log->score_char, 100, "%d", game_log->score);
 }
-
+//Not use
 void reset_game_info(Game_Log* game_log) {
 
 }

@@ -82,6 +82,7 @@ void on_reshape(int width, int height) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0.0, g_screen_width, 0.0, g_screen_height, 1.0, -1.0);	
+
 }
 void on_display()
 {
@@ -126,7 +127,7 @@ void on_display()
 	}
 	//render puff
 	for (int i = 0; i < NUMBER_OF_PARTICLE_IN_PUFF; i++) {
-		if (puff[i].active == 1) {
+		if (puff[i].active == 1 && new_start == 0) {
 			render_particle(&window, &ship, &puff[i]);
 		}
 	}
@@ -157,14 +158,17 @@ void on_keyboard_press(unsigned char key, int x, int y)
 	case KEY_FORWARD:
 	//case 'w':
 		keyboard.forward = KEY_PRESSED;
+		new_start = 0;
 		break;
 	case KEY_ANIT_CLOCKWISE:
 	//case 'a':
 		keyboard.anti_clockwise = KEY_PRESSED;
+		new_start = 0;
 		break;
 	case KEY_CLOCKWISE:
 	//case 'd':
 		keyboard.clockwise = KEY_PRESSED;
+		new_start = 0;
 		break;
 	default:
 		//Retset Game
@@ -175,15 +179,18 @@ void on_keyboard_press(unsigned char key, int x, int y)
 			//reset asteroids
 			for (int i = 0; i < NUMBER_OF_ASTEROID; i++) {
 				launch_asteroid(&ship, &asteroids[i], &asteroid_directions[i], &asteroid_Postions[i],
-					window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
+					window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE,
+					ASTEROID_COLOR_R, ASTEROID_COLOR_G, ASTEROID_COLOR_B);
 			}
 			for (int i = 0; i < NUMBER_OF_ASTEROID * 2; i++) {
 				launch_asteroid(&ship, &small_asteroids[i], &small_asteroid_directions[i], &small_asteroid_Postions[i],
-					window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
+					window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE,
+					ASTEROID_COLOR_R, ASTEROID_COLOR_G, ASTEROID_COLOR_B);
 			}
 			current_number_of_asteroid = 1;
 			explosion_index = 0;
 			//reset game score
+			game_log.last_game_time = cur_time;
 			game_log_init(&game_log, g_screen_width, g_screen_height, minutes, seconds, score);
 
 		}
@@ -272,7 +279,7 @@ void on_idle()
 	decreasing_speed(&ship, &keyboard, dt, SHIP_MAX_VELOCITY, 30);
 
 	//Movement of the ship
-	if (keyboard.forward == 1) {
+	if (keyboard.forward == 1 && ship.active == 1) {
 		update_ship_position(&ship,ship.current_degree, ship.velocity * dt);
 		g_particle_hold += dt;
 		if (g_particle_hold > 0.15) {	
@@ -441,12 +448,13 @@ void init_game() {
 	window_init(&window, g_screen_width, g_screen_height, FULL_SCREEN);
 	//init game log
 	game_log_init(&game_log, g_screen_width, g_screen_height, minutes, seconds, score);
+	game_log.last_game_time = 0;
 	//init colors
 	color_init(&ship_outline_color,SHIP_OUTLINE_R, SHIP_OUTLINE_G, SHIP_OUTLINE_B);
 	color_init(&ship_filling_color, SHIP_FILLING_R, SHIP_FILLING_G, SHIP_FILLING_B);
 	color_init(&arena_color,ARENA_COLOR_R, ARENA_COLOR_G, ARENA_COLOR_B);
 	color_init(&asteroids_color, ASTEROID_COLOR_R,ASTEROID_COLOR_G, ASTEROID_COLOR_B);
-	color_init(&puff_color, 1, 0 , 0);
+	color_init(&puff_color, 0.545, 0, 0);
 	//init arena
 	arena_init(&arena, &arena_color,g_screen_width,g_screen_height,ARENA_SCALE_SIZE);
 	//init a point the ship towards, by default, it is the top-right corner
@@ -461,16 +469,19 @@ void init_game() {
 	//init asteroids, both normal one and the splitted one
 	for (int i = 0; i < NUMBER_OF_ASTEROID; i++) {
 		launch_asteroid(&ship, &asteroids[i], &asteroid_directions[i], &asteroid_Postions[i],
-			window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
+			window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE,
+			ASTEROID_COLOR_R, ASTEROID_COLOR_G, ASTEROID_COLOR_B);
 	}
 	for (int i = 0; i < NUMBER_OF_ASTEROID * 2; i++) {
 		launch_asteroid(&ship, &small_asteroids[i], &small_asteroid_directions[i], &small_asteroid_Postions[i],
-			window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
+			window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE,
+			ASTEROID_COLOR_R, ASTEROID_COLOR_G, ASTEROID_COLOR_B);
 	}
 
 	//init bullets
 	for (int i = 0; i < NUMBER_OF_BULLETS; i++) {
-		bullet_init(&bullets[i], &ship, &bullets_direction[i], &bullets_Postion[i], BULLET_VELOCITY);
+		bullet_init(&bullets[i], &ship, &bullets_direction[i], &bullets_Postion[i], BULLET_VELOCITY,
+			BULLET_COLOR_R, BULLET_COLOR_G, BULLET_COLOR_B);
 		bullets[i].fired = 0;
 	}
 
@@ -482,9 +493,6 @@ void init_game() {
 	explosion_init(&particles, &particles_Postion, &particles_direction, &particles_color, NUMBER_OF_PARTICLE_IN_EXPLOSION,
 		EXPLOSION_LIFESPAN,PARTICLE_SIZE,PARTICLE_VELOCITY);
 
-	//for (int i = 0; i < NUMBER_OF_PARTICLE_IN_EXPLOSION; i++) {
-	//	printf("%d,%f,%f\n", i, particles[i].direction[i].x, particles[i].direction[i].y);
-	//}
 	//init keyboard stats
 	keyboard_init(&keyboard);
 }

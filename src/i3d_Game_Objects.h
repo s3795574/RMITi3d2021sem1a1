@@ -46,6 +46,9 @@ typedef struct bullet {
 	Vector2D* direction;
 	float velocity;
 	int fired;
+	float R;
+	float G;
+	float B;
 }Bullet;
 //This strcut respresents user operations on keyboard
 typedef struct keyboard {
@@ -84,14 +87,15 @@ extern void update_ship_angle(Spaceship* ship2d, float degree);
 //reset the ship position once the ship hit the wall
 extern int reset_ship(Spaceship* ship2d, Game_Window* window, float x, float y);
 //initialize bullet
-extern void bullet_init(Bullet* bullet, Spaceship* ship, Vector2D* dir, Vector2D* pos, float velocity);
+extern void bullet_init(Bullet* bullet, Spaceship* ship, Vector2D* dir, Vector2D* pos, float velocity, float r, float b, float g);
 
 extern void update_bullet_position(Bullet* bullet, float movement);
 
 extern void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid, Vector2D* dir, Vector2D* pos, 
-	int width, int height, float vel, float av, float scale_size);
+	int width, int height, float vel, float av, float scale_size, float r, float g, float b);
 
 extern void split_asteroid(Asteroid* asteroid , Asteroid* asteroid_left, Asteroid* asteroid_right, int width, float scale_size);
+
 extern void update_asteroid_position(Asteroid* asteroid, int width, int height, float movement);
 
 extern void update_asteroid_angle(Asteroid* asteroid, float degree);

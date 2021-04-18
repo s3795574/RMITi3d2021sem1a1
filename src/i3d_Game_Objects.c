@@ -146,7 +146,7 @@ int reset_ship(Spaceship* ship2d, Game_Window* window,float x, float y) {
 	ship2d->active = 1;
 }
 
-void bullet_init(Bullet* bullet, Spaceship* ship, Vector2D* dir, Vector2D* pos, float velocity) {
+void bullet_init(Bullet* bullet, Spaceship* ship, Vector2D* dir, Vector2D* pos, float velocity, float r, float b, float g) {
 	bullet->direction = dir;
 	bullet->position = pos;
 	bullet->position->x = ship->position->x;
@@ -155,6 +155,9 @@ void bullet_init(Bullet* bullet, Spaceship* ship, Vector2D* dir, Vector2D* pos, 
 	bullet->direction->y = ship->direction->y;
 	bullet->velocity = velocity;
 	bullet->fired = 0;
+	bullet->R = r;
+	bullet->G = g;
+	bullet->B = b;
 }
 
 void update_bullet_position(Bullet* bullet, float movement) {
@@ -163,7 +166,7 @@ void update_bullet_position(Bullet* bullet, float movement) {
 
 void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid,
 	Vector2D* ast_dir, Vector2D* ast_pos,
-	int width, int height, float vel, float av, float scale_size) {
+	int width, int height, float vel, float av, float scale_size, float r, float g, float b) {
 
 	float angle = (360 / 20) / (180.0 / M_PI);//get radian for each triangle
 	//float circle[3 * 20];//each vertex needs three values
@@ -177,11 +180,12 @@ void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid,
 	vec2d_t_init(ast_pos, width, height);
 	int random_degree = rand() % 360; //get a random degree
 	float radian = random_degree / (180.0 / M_PI);//get radian from degree
-	float random_ratio = (rand() % 20) * 0.01; // a random number between 0 and 0.1
+	float random_ratio = (rand() % 20) * 0.01; // a random number between 0 and 0.2
 	//Set values in a random range 
 	if (random_degree % 2 == 1) {// either the result is 0 or 1
 		asteroid->velocity = vel * (1 + random_ratio);
 		asteroid->clockwise = 1;
+		asteroid->av = av * (1 + random_ratio);
 		//a slightly larger radius(bouding circle) will have 3 hit point.
 		asteroid->bounding_circle = scale_size * width * (1 + random_ratio);
 		asteroid->radius = (1 + random_ratio);
@@ -191,6 +195,7 @@ void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid,
 	else {
 		asteroid->velocity = vel * (1 - random_ratio);
 		asteroid->clockwise = 0;
+		asteroid->av = av * (1 - random_ratio);
 		//a slightly smaller radius(bouding circle) will have 2 hit point.
 		asteroid->bounding_circle = scale_size * width * (1 - random_ratio);
 		asteroid->radius = (1 - random_ratio);
@@ -216,6 +221,8 @@ void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid,
 }
 
 void split_asteroid(Asteroid* asteroid, Asteroid* asteroid_left, Asteroid* asteroid_right,int width, float scale_size) {
+	float random_ratio = (rand() % 10) * 0.01;
+	float random = rand() % 2;
 	//calculate the new position of splitted asteroids.
 	float deltaX, deltaY;
 	//Create three separate direction for asteroid, left asteroid and right asteroid
@@ -227,47 +234,59 @@ void split_asteroid(Asteroid* asteroid, Asteroid* asteroid_left, Asteroid* aster
 	right_dir.x = asteroid->direction->x;
 	right_dir.y = asteroid->direction->y;
 	float asteroid_degree = getAngleInDegree(&dir);
-	printf("Before:%f,%f\n", asteroid->direction->x, asteroid->direction->y);
 	//rotation to the left
 	float clockwise_45_degree = asteroid_degree + 45;
 	update_direction(asteroid_left->direction, clockwise_45_degree);
-	float degree_after_clockwise_45_degree = getAngleInDegree(asteroid_left->direction);
 	float counter_clockwise_45_degree_45_degree = asteroid_degree - 45;
 	update_direction(asteroid_right->direction, counter_clockwise_45_degree_45_degree);
-	float degree_after_counter_clockwise_45_degree = getAngleInDegree(asteroid_right->direction);
 	//Calculate the new position for the left
-	//rotation(asteroid->direction, -90);
 	update_direction(&left_dir, asteroid_degree + 90);
 	deltaX = left_dir.x * width * scale_size;
 	deltaY = left_dir.y * width * scale_size;
-	asteroid_left->position->x = asteroid->position->x + deltaX;
-	asteroid_left->position->y = asteroid->position->y + deltaY;
-	asteroid_left->bounding_circle = asteroid->bounding_circle / 2 * 0.9;
-	asteroid_left->radius = asteroid->radius / 2 * 0.9;
+	//increase delta a little bit to aviod both left and right asteriod are larger one when spliting
+	//Otherwise, they will collision by the time they are created.
+	asteroid_left->position->x = asteroid->position->x + deltaX * (1 + random_ratio);
+	asteroid_left->position->y = asteroid->position->y + deltaY * (1 + random_ratio);
 	asteroid_left->av = asteroid->av;
-	asteroid_left->clockwise = 1;
-	asteroid_left->velocity = asteroid->velocity;
-	asteroid_left->hp = 1;
 	asteroid_left->active = 1;
+	asteroid_left->velocity = asteroid->velocity;
+	//larger asteroid got 2 hit point and a bigger radius and bounding_circle
+	if (random == 1) {
+		asteroid_left->bounding_circle = asteroid->bounding_circle / 2 *  (1 + random_ratio);
+		asteroid_left->radius = asteroid->radius / 2 * (1 + random_ratio);
+		asteroid_left->clockwise = 1;
+		asteroid_left->hp = 2;
+	}
+	else {
+		asteroid_left->bounding_circle = asteroid->bounding_circle / 2 * (1 - random_ratio);
+		asteroid_left->radius = asteroid->radius / 2 * (1 - random_ratio);
+		asteroid_left->clockwise = 0;
+		asteroid_left->hp = 1;
+	}
+	
 
-	//reverse, it equals to ratation to the right for 90 degree
-	//rotation(asteroid->direction, 180);
+	//Calculate the new position for the right
 	update_direction(&right_dir, asteroid_degree - 90);
 	deltaX = right_dir.x * width * scale_size;
 	deltaY = right_dir.y * width * scale_size;
-	asteroid_right->position->x = asteroid->position->x + deltaX;
-	asteroid_right->position->y = asteroid->position->y + deltaY;
-	asteroid_right->bounding_circle = asteroid->bounding_circle / 2 * 0.9;
-	asteroid_right->radius = asteroid->radius / 2 * 0.9;
+	asteroid_right->position->x = asteroid->position->x + deltaX * (1 + random_ratio);
+	asteroid_right->position->y = asteroid->position->y + deltaY * (1 + random_ratio);
 	asteroid_right->av = asteroid->av;
-	asteroid_right->clockwise = 0;
-	asteroid_right->velocity = asteroid->velocity;
-	asteroid_right->hp = 1;
 	asteroid_right->active = 1;
-	printf("After:%f,%f\n", asteroid_left->direction->x, asteroid_left->direction->y);
-	printf("After:%f,%f\n", asteroid_right->direction->x, asteroid_right->direction->y);
-	printf("After:%f,%f\n", asteroid_left->position->x, asteroid_left->position->y);
-	printf("After:%f,%f\n", asteroid_right->position->x, asteroid_right->position->y);
+	asteroid_right->velocity = asteroid->velocity;
+	//larger asteroid got 2 hit point and a bigger radius and bounding_circle
+	if (random == 1) {
+		asteroid_right->bounding_circle = asteroid->bounding_circle / 2 * (1 + random_ratio);
+		asteroid_right->radius = asteroid->radius / 2 * (1 + random_ratio);
+		asteroid_right->clockwise = 1;
+		asteroid_right->hp = 2;
+	}
+	else {
+		asteroid_right->bounding_circle = asteroid->bounding_circle / 2 * (1 - random_ratio);
+		asteroid_right->radius = asteroid->radius / 2 * (1 - random_ratio);
+		asteroid_right->clockwise = 0;
+		asteroid_right->hp = 1;
+	}
 }
 
 void update_asteroid_position(Asteroid* asteroid, int width, int height, float movement) {

@@ -16,6 +16,7 @@ typedef struct game_log {
 	char* score_prefix;
 	char* score_char;
 	int score;
+	int last_game_time;
 	char* total_time_prefix;
 	char* minutes;
 	char* seconds;

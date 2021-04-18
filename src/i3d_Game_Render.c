@@ -60,13 +60,6 @@ extern void render_arena(Arena* arena) {
 };
 
 void render_circle(int width, int height, Asteroid* asteroid ,GLfloat radius, Color* color, float asteriod_scale_size) {
-    float radian = (360/ NUMBER_OF_TRIANGLES) / (180.0 / M_PI);//get radian for each triangle
-    //float circle[3 * NUMBER_OF_TRIANGLES];//each vertex needs three values
-    //for (int i = 0; i < 20; i++) {
-    //    circle[i * 3] = cosf(radian * i);//X
-    //    circle[i * 3 + 1] = sinf(radian * i); //Y
-    //    circle[i * 3 + 2] = 0; //Z is always 0 in 2D
-    //}
     glPushMatrix();
     glColor3f(asteroid->R, asteroid->G, asteroid->B);
     glTranslatef(asteroid->position->x, asteroid->position->y, 0.0);
@@ -83,7 +76,7 @@ void render_circle(int width, int height, Asteroid* asteroid ,GLfloat radius, Co
 
 void render_bullet(Game_Window* window, Spaceship* ship, Bullet* bullet) {
     glPushMatrix();
-    glColor3f(1, 1 ,1);
+    glColor3f(bullet->R, bullet->G, bullet->B);
     glTranslatef(bullet->position->x, bullet->position->y, 0.0);
     //0.02 is the scale size of the ship, changing it will make the bullet shoot in front of the ship instead of from the ship
     glScalef(window->width * 0.02, window->width * 0.02, 0.0);
@@ -99,7 +92,7 @@ void render_particle(Game_Window* window, Spaceship* ship, Particle* particle) {
     glColor3f(particle->color->R, particle->color->B, particle->color->G);
     glTranslatef(particle->position->x, particle->position->y, 0.0);
     glScalef(particle->radius, particle->radius, 0.0);
-    glBegin(GL_LINE_LOOP);
+    glBegin(GL_POLYGON);
     for (int i = 0; i < 20; i++) {
         glVertex3f(particle->vertex[i * 3], particle->vertex[i * 3 + 1], particle->vertex[i * 3 + 2]);
     }
