@@ -179,6 +179,19 @@ void render_end_game_info(Game_Log* game_log) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *t);
     }
 }
+void render_start_game_info(Game_Log* game_log) {
+    int length_of_text = 0;
+    int width_of_text = 0;
+    for (char* t = game_log->start_game; *t != '\0'; t++) {
+        length_of_text++;
+        width_of_text += glutBitmapWidth(GLUT_BITMAP_TIMES_ROMAN_24, *t);
+    }
+    glColor3f(1, 1, 1);
+    glRasterPos2f(game_log->width / 2 - width_of_text / 2, game_log->height / 2);
+    for (char* t = game_log->start_game; *t != '\0'; t++) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *t);
+    }
+}
 
 void render_explosion(Game_Window* window, Particle_v2* particle, int array_size, int scale_size) {
     glPushMatrix();

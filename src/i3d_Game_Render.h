@@ -32,6 +32,7 @@ extern void render_game_time(Game_Log* game_log);
 extern void render_game_score(Game_Log* game_log);
 //Rending end game info
 extern void render_end_game_info(Game_Log* game_log);
+extern void render_start_game_info(Game_Log* game_log);
 //Rending explosion
 extern void render_explosion(Game_Window* window, Particle_v2* particle, int array_size, int scale_size);
 extern void render_circle_test(int width, int height);

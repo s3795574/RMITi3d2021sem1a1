@@ -20,6 +20,7 @@ typedef struct game_log {
 	char* minutes;
 	char* seconds;
 	char* game_over;
+	char* start_game;
 	int width;
 	int height;
 }Game_Log;

@@ -22,6 +22,7 @@
 #endif
 
 //variables
+int new_start = 1; // 1 indicate new start
 int g_screen_width = 0;
 int g_screen_height = 0;
 float g_last_time = 0.0;
@@ -94,8 +95,11 @@ void on_display()
 
 	render_arena(&arena);
 	//Render ship only when it is active
-	if (ship.active == 1) {
+	if (ship.active == 1 && new_start == 0) {
 		render_spaceShip(window.width, window.height, &ship, SHIP_SCALE_SIZE);
+	}
+	else if (ship.active == 1 && new_start == 1) {
+		render_start_game_info(&game_log);
 	}
 	else
 	{
@@ -183,6 +187,10 @@ void on_keyboard_press(unsigned char key, int x, int y)
 			game_log_init(&game_log, g_screen_width, g_screen_height, minutes, seconds, score);
 
 		}
+		//new start
+		if (new_start == 1) {
+			new_start = 0;
+		}
 		break;
 	}
 }
@@ -221,7 +229,10 @@ void on_idle()
 	//get time
 	cur_time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
 	//update game time
-	update_game_time(&game_log,cur_time, minutes, seconds);
+	if (new_start == 0) {
+		update_game_time(&game_log, cur_time, minutes, seconds);
+	}
+	
 	//get the time interval between frames
 	dt = cur_time - g_last_time;
 	//Update the asteriod direction towards the ship
@@ -238,7 +249,7 @@ void on_idle()
 		};
 	}
 	//increase the number of asteroid over time
-	if (current_number_of_asteroid < NUMBER_OF_ASTEROID && cur_time - g_asteroid_time >= WAVE_INTERVAL) {
+	if (new_start == 0 && current_number_of_asteroid < NUMBER_OF_ASTEROID && cur_time - g_asteroid_time >= WAVE_INTERVAL) {
 		current_number_of_asteroid++;
 		g_asteroid_time = cur_time;
 	}

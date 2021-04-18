@@ -12,6 +12,7 @@ void game_log_init(Game_Log* game_log, int width, int height, char* minutes, cha
 	game_log->width = width;
 	game_log->height = height;
 	game_log->game_over = "Game Over.Press any key to play again...";
+	game_log->start_game = "Press any key to start a new game!";
 }
 
 void convert_time_minute(int current_time, char* minutes){
