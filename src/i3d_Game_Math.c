@@ -38,6 +38,9 @@ void update_position(Vector2D* direction, Vector2D* position,float degree, float
 }
 
 void update_direction(Vector2D* direction, float degree) {
+	if (degree > 360) {
+		degree = (int)degree % 360;
+	}
 	float radian = degree / (180.0 / M_PI);
 	direction->x = cosf(radian);
 	direction->y = sinf(radian) ;
@@ -54,4 +57,12 @@ float get_normal_y(float y1, float y2, float distance) {
 
 float get_dot_product(float x1, float y1, float x2, float y2) {
 	return x1 * x2 + y1 * y2;
+}
+
+void rotation(Vector2D* direction, float degree) {
+	float radian = degree / (180.0 / M_PI);
+	float cos = cosf(radian);
+	float sin = sinf(radian);
+	direction->x = direction->x * cos - direction->x * sin;
+	direction->y = direction->y * sin + direction->y * cos;
 }

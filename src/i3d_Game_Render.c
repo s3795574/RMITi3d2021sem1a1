@@ -71,7 +71,7 @@ void render_circle(int width, int height, Asteroid* asteroid ,GLfloat radius, Co
     glColor3f(asteroid->R, asteroid->G, asteroid->B);
     glTranslatef(asteroid->position->x, asteroid->position->y, 0.0);
     glRotatef(asteroid->current_degree - FIX_DEGREE, 0, 0, 1);
-    glScalef(width * asteriod_scale_size, width * asteriod_scale_size, 0.0);
+    glScalef(width * asteriod_scale_size * asteroid->radius, width * asteriod_scale_size * asteroid->radius, 0.0);
     glBegin(GL_POLYGON);
     for (int i = 0; i < 20; i++) {
         glVertex3f(asteroid->vertex[i*3], asteroid->vertex[i * 3+1], asteroid->vertex[i * 3+2]);
@@ -83,6 +83,7 @@ void render_circle(int width, int height, Asteroid* asteroid ,GLfloat radius, Co
 
 void render_bullet(Game_Window* window, Spaceship* ship, Bullet* bullet) {
     glPushMatrix();
+    glColor3f(1, 1 ,1);
     glTranslatef(bullet->position->x, bullet->position->y, 0.0);
     //0.02 is the scale size of the ship, changing it will make the bullet shoot in front of the ship instead of from the ship
     glScalef(window->width * 0.02, window->width * 0.02, 0.0);
@@ -177,4 +178,16 @@ void render_end_game_info(Game_Log* game_log) {
     for (char* t = game_log->game_over; *t != '\0'; t++) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *t);
     }
+}
+
+void render_explosion(Game_Window* window, Particle_v2* particle, int array_size, int scale_size) {
+    glPushMatrix();
+    glColor3f(particle->color->R, particle->color->B, particle->color->G);
+    glTranslatef(particle->position->x, particle->position->y, 0.0);
+    glScalef(window->width * scale_size, window->width * scale_size, 0.0);
+    glPointSize(particle->size);
+    glBegin(GL_POINTS);
+    glVertex3f(0, 0, 0);
+    glEnd();
+    glPopMatrix();
 }

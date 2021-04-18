@@ -9,36 +9,6 @@ void vec2d_t_init(Vector2D* vector2d, float x, float y) {
 	vector2d->y = y;
 }
 
-Vector2D* vec2d_new(float x, float y) {
-	Vector2D* vector = (Vector2D*)malloc(sizeof(Vector2D));
-	if (vector != NULL)
-	{
-		vector->y = y;
-		vector->x = x;
-		return vector;
-	}
-	else
-	{
-		printf("s%", "Vector pointer is null inside vec2d_new funtion.");
-	}	
-	
-}
-
-Color* color_new() {
-	Color* color = (Color*)malloc(sizeof(Color));
-	if (color != NULL)
-	{
-		color->R = 1;
-		color->G = 1;
-		color->B = 1;
-		return color;
-	}
-	else
-	{
-		printf("s%", "Color pointer is null inside color_new funtion.");
-	}
-}
-
 void window_init(Game_Window* window, int width, int height,int full_screen) {
 	window->width = width;
 	window->height = height;
@@ -87,7 +57,7 @@ int hit_wall(Spaceship* ship2d, Arena* arena, float warning_ratio) {
 //return 1 if they collided
 int spaceship_asteroid_collision(Spaceship* ship2d, Asteroid* asteroid) {
 	int distance = getDistance(ship2d->position, asteroid->position);
-	if (ship2d->active == 1 && asteroid->active == 1 && distance <= ship2d->bounding_circle + asteroid->radius) {
+	if (ship2d->active == 1 && asteroid->active == 1 && distance <= ship2d->bounding_circle + asteroid->bounding_circle) {
 		ship2d->active = 0;
 		return 1;
 	}
@@ -98,16 +68,19 @@ int spaceship_asteroid_collision(Spaceship* ship2d, Asteroid* asteroid) {
 //return 1 if bullet hit the asteroid, return 2 if the asteroid destoryed
 int bullet_asteroid_collision(Bullet* bullet, Asteroid* asteroid) {
 	int distance = getDistance(bullet->position, asteroid->position);
-	if (bullet->fired == 1 && asteroid->active == 1 && distance <= asteroid->radius) {
+	if (bullet->fired == 1 && asteroid->active == 1 && distance <= asteroid->bounding_circle) {
 		asteroid->hp = asteroid->hp - 1;
 		if (asteroid->hp == 2) {
 			asteroid->B = 0;
+			bullet->fired = 0;
 		}
 		else if (asteroid->hp == 1) {
 			asteroid->G = 0;
+			bullet->fired = 0;
 		}
 		else {
 			asteroid->active = 0;
+			bullet->fired = 0;
 			return 2;
 		}	
 		bullet->fired = 0;
@@ -204,38 +177,97 @@ void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid,
 	vec2d_t_init(ast_pos, width, height);
 	int random_degree = rand() % 360; //get a random degree
 	float radian = random_degree / (180.0 / M_PI);//get radian from degree
-	float random_ratio = (rand() % 10) * 0.01; // a random number between 0 and 0.1
+	float random_ratio = (rand() % 20) * 0.01; // a random number between 0 and 0.1
+	//Set values in a random range 
 	if (random_degree % 2 == 1) {// either the result is 0 or 1
 		asteroid->velocity = vel * (1 + random_ratio);
 		asteroid->clockwise = 1;
 		//a slightly larger radius(bouding circle) will have 3 hit point.
-		asteroid->radius = scale_size * width * (1 + random_ratio);
+		asteroid->bounding_circle = scale_size * width * (1 + random_ratio);
+		asteroid->radius = (1 + random_ratio);
+		//larger asteroid has 3 hp
 		asteroid->hp = 3;
 	}
 	else {
 		asteroid->velocity = vel * (1 - random_ratio);
 		asteroid->clockwise = 0;
 		//a slightly smaller radius(bouding circle) will have 2 hit point.
-		asteroid->radius = scale_size * width * (1 - random_ratio);
+		asteroid->bounding_circle = scale_size * width * (1 - random_ratio);
+		asteroid->radius = (1 - random_ratio);
+		//smaller asteroid has 2 hp
 		asteroid->hp = 2;
 	}
 	//The launch position is on a circle with radius =  launch_pos, the center is the screen center
 	float launch_pos = getLength2D(width / 2, height / 2); 
 	ast_pos->y = sinf(radian) * launch_pos + height / 2;
 	ast_pos->x = cosf(radian) * launch_pos + width / 2;
-	//set direction to a point that asteroid towards
-	ast_dir->x = ship2d->position->x;
-	ast_dir->y = ship2d->position->y;
-	//normalizing from asteroid's position
-	normalizing(ast_dir, ast_pos->x, ast_pos->y);
-	//get a random speed between -10% and 10% of the predefined speed
+	//The code below has no use, the direction will be set when the asteroid become active.
+	//ast_dir->x = ship2d->position->x;
+	//ast_dir->y = ship2d->position->y;
+	////normalizing from asteroid's position
+	//normalizing(ast_dir, ast_pos->x, ast_pos->y);
 
 	asteroid->direction = ast_dir;
 	asteroid->position = ast_pos;
-	asteroid->active = 1;
-	asteroid->R = 1;
-	asteroid->G = 1;
-	asteroid->B = 1;
+	asteroid->active = 0;
+	asteroid->R = 0.5;
+	asteroid->G = 0.5;
+	asteroid->B = 0.5;
+}
+
+void split_asteroid(Asteroid* asteroid, Asteroid* asteroid_left, Asteroid* asteroid_right,int width, float scale_size) {
+	//calculate the new position of splitted asteroids.
+	float deltaX, deltaY;
+	//Create three separate direction for asteroid, left asteroid and right asteroid
+	Vector2D dir, left_dir, right_dir;
+	dir.x = asteroid->direction->x;
+	dir.y = asteroid->direction->y;
+	left_dir.x = asteroid->direction->x;
+	left_dir.y = asteroid->direction->y;
+	right_dir.x = asteroid->direction->x;
+	right_dir.y = asteroid->direction->y;
+	float asteroid_degree = getAngleInDegree(&dir);
+	printf("Before:%f,%f\n", asteroid->direction->x, asteroid->direction->y);
+	//rotation to the left
+	float clockwise_45_degree = asteroid_degree + 45;
+	update_direction(asteroid_left->direction, clockwise_45_degree);
+	float degree_after_clockwise_45_degree = getAngleInDegree(asteroid_left->direction);
+	float counter_clockwise_45_degree_45_degree = asteroid_degree - 45;
+	update_direction(asteroid_right->direction, counter_clockwise_45_degree_45_degree);
+	float degree_after_counter_clockwise_45_degree = getAngleInDegree(asteroid_right->direction);
+	//Calculate the new position for the left
+	//rotation(asteroid->direction, -90);
+	update_direction(&left_dir, asteroid_degree + 90);
+	deltaX = left_dir.x * width * scale_size;
+	deltaY = left_dir.y * width * scale_size;
+	asteroid_left->position->x = asteroid->position->x + deltaX;
+	asteroid_left->position->y = asteroid->position->y + deltaY;
+	asteroid_left->bounding_circle = asteroid->bounding_circle / 2 * 0.9;
+	asteroid_left->radius = asteroid->radius / 2 * 0.9;
+	asteroid_left->av = asteroid->av;
+	asteroid_left->clockwise = 1;
+	asteroid_left->velocity = asteroid->velocity;
+	asteroid_left->hp = 1;
+	asteroid_left->active = 1;
+
+	//reverse, it equals to ratation to the right for 90 degree
+	//rotation(asteroid->direction, 180);
+	update_direction(&right_dir, asteroid_degree - 90);
+	deltaX = right_dir.x * width * scale_size;
+	deltaY = right_dir.y * width * scale_size;
+	asteroid_right->position->x = asteroid->position->x + deltaX;
+	asteroid_right->position->y = asteroid->position->y + deltaY;
+	asteroid_right->bounding_circle = asteroid->bounding_circle / 2 * 0.9;
+	asteroid_right->radius = asteroid->radius / 2 * 0.9;
+	asteroid_right->av = asteroid->av;
+	asteroid_right->clockwise = 0;
+	asteroid_right->velocity = asteroid->velocity;
+	asteroid_right->hp = 1;
+	asteroid_right->active = 1;
+	printf("After:%f,%f\n", asteroid_left->direction->x, asteroid_left->direction->y);
+	printf("After:%f,%f\n", asteroid_right->direction->x, asteroid_right->direction->y);
+	printf("After:%f,%f\n", asteroid_left->position->x, asteroid_left->position->y);
+	printf("After:%f,%f\n", asteroid_right->position->x, asteroid_right->position->y);
 }
 
 void update_asteroid_position(Asteroid* asteroid, int width, int height, float movement) {

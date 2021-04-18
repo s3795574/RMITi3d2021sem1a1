@@ -25,15 +25,14 @@
 int g_screen_width = 0;
 int g_screen_height = 0;
 float g_last_time = 0.0;
-float g_asteroid_time = 0.0;
-float g_particle_hold = 0.0f;
+float g_asteroid_time = 0.0; // compare with the WAVE_INTERVAL to decide if a new asteroid need to be added into the game.
+float g_particle_hold = 0.0f; // Time interval between each partical that being released from the rear of the ship
 float cur_time = 0.0f;
 float dt = 0;
-int current_number_of_asteroid = 1;
+int current_number_of_asteroid = 0;
 int current_number_of_splited_asteroid = 0;
-int puff_index = 0;
-int explosion_index = 0;
-char* t;
+int puff_index = 0; // Maintian the number of the particles in puff
+int explosion_index = 0;  // Maintian the number of the particles in explosion
 char minutes[100];
 char seconds[100];
 char score[100];
@@ -51,6 +50,9 @@ Arena arena;
 Asteroid asteroids[NUMBER_OF_ASTEROID];
 Vector2D asteroid_Postions[NUMBER_OF_ASTEROID];
 Vector2D asteroid_directions[NUMBER_OF_ASTEROID];
+Asteroid small_asteroids[NUMBER_OF_ASTEROID * 2];
+Vector2D small_asteroid_Postions[NUMBER_OF_ASTEROID * 2];
+Vector2D small_asteroid_directions[NUMBER_OF_ASTEROID * 2];
 //keyboard
 Keyboard keyboard;
 //color
@@ -86,34 +88,48 @@ void on_display()
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
+	//Render game info
 	render_game_score(&game_log);
 	render_game_time(&game_log);
 
 	render_arena(&arena);
+	//Render ship only when it is active
 	if (ship.active == 1) {
 		render_spaceShip(window.width, window.height, &ship, SHIP_SCALE_SIZE);
 	}
 	else
 	{
+		//otherwise, render game over info
 		render_end_game_info(&game_log);
 	}
-
+	//render asteroids
 	for (int i = 0; i < current_number_of_asteroid; i++) {
 		if (asteroids[i].active == 1) {
-			render_circle(window.width, window.height, &asteroids[i], asteroids[i].radius, &asteroids_color, ASTEROID_SCALE_SIZE);
+			render_circle(window.width, window.height, &asteroids[i], asteroids[i].bounding_circle, &asteroids_color, ASTEROID_SCALE_SIZE);
 		}	
 	}
-
+	//render small asteroids
+	for (int i = 0; i < current_number_of_splited_asteroid; i++) {
+		if (small_asteroids[i].active == 1) {
+			render_circle(window.width, window.height, &small_asteroids[i], small_asteroids[i].bounding_circle, &asteroids_color, ASTEROID_SCALE_SIZE);
+		}
+	}
+	//render bullets
 	for (int i = 0; i < NUMBER_OF_BULLETS; i++) {
 		if (bullets[i].fired == 1) {
 			render_bullet(&window, &ship, &bullets[i]);
 		}
 	}
-
+	//render puff
 	for (int i = 0; i < NUMBER_OF_PARTICLE_IN_PUFF; i++) {
 		if (puff[i].active == 1) {
 			render_particle(&window, &ship, &puff[i]);
+		}
+	}
+	//render explosion
+	for (int i = 0; i < NUMBER_OF_PARTICLE_IN_EXPLOSION; i++) {
+		if (particles[i].active == 1) {
+			render_explosion(&window, &particles[i], NUMBER_OF_PARTICLE_IN_EXPLOSION, SHIP_SCALE_SIZE);
 		}
 	}
 
@@ -150,14 +166,22 @@ void on_keyboard_press(unsigned char key, int x, int y)
 		//Retset Game
 		if (ship.active == 0) {
 			reset_ship(&ship, &window, window.width * START_POS_RATIO + arena.left, window.height * START_POS_RATIO + arena.bottom);
+			reset_puff(&puff, NUMBER_OF_PARTICLE_IN_PUFF);
+			reset_explosion(&particles, NUMBER_OF_PARTICLE_IN_EXPLOSION);
 			//reset asteroids
 			for (int i = 0; i < NUMBER_OF_ASTEROID; i++) {
 				launch_asteroid(&ship, &asteroids[i], &asteroid_directions[i], &asteroid_Postions[i],
 					window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
 			}
+			for (int i = 0; i < NUMBER_OF_ASTEROID * 2; i++) {
+				launch_asteroid(&ship, &small_asteroids[i], &small_asteroid_directions[i], &small_asteroid_Postions[i],
+					window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
+			}
 			current_number_of_asteroid = 1;
+			explosion_index = 0;
 			//reset game score
 			game_log_init(&game_log, g_screen_width, g_screen_height, minutes, seconds, score);
+
 		}
 		break;
 	}
@@ -194,10 +218,25 @@ void on_mouse_button(int btn, int state, int x, int y) {
 
 void on_idle()
 {
+	//get time
 	cur_time = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+	//update game time
 	update_game_time(&game_log,cur_time, minutes, seconds);
+	//get the time interval between frames
 	dt = cur_time - g_last_time;
-	
+	//Update the asteriod direction towards the ship
+	if (asteroids[current_number_of_asteroid].active == 0) {
+		if (asteroids[current_number_of_asteroid].active == 0) {
+			asteroids[current_number_of_asteroid].active = 1;
+			//set direction to a point that asteroid towards ship
+			asteroids[current_number_of_asteroid].direction->x = ship.position->x;
+			asteroids[current_number_of_asteroid].direction->y = ship.position->y;
+			//normalizing from asteroid's position
+			normalizing(asteroids[current_number_of_asteroid].direction, 
+				asteroids[current_number_of_asteroid].position->x, 
+				asteroids[current_number_of_asteroid].position->y);
+		};
+	}
 	//increase the number of asteroid over time
 	if (current_number_of_asteroid < NUMBER_OF_ASTEROID && cur_time - g_asteroid_time >= WAVE_INTERVAL) {
 		current_number_of_asteroid++;
@@ -237,13 +276,12 @@ void on_idle()
 	else {
 		update_ship_position(&ship, ship.current_degree, ship.velocity * dt);
 	}
+	//Ship rotation
 	if (keyboard.anti_clockwise == 1) {
 		update_ship_angle(&ship, SHIP_AV * dt);
-		//fprintf(stderr, "a(%f,%f,%f)\n", ship.current_degree, ship.direction->x, ship.direction->y);
 	}
 	if (keyboard.clockwise == 1) {
 		update_ship_angle(&ship, -(SHIP_AV * dt));
-		//fprintf(stderr, "d(%f,%f,%f)\n", ship.current_degree, ship.direction->x, ship.direction->y);
 	}
 
 	//Movement of an astroid
@@ -252,6 +290,15 @@ void on_idle()
 		update_asteroid_angle(&asteroids[i], ASTEROID_ANGULAR_VELOCITY * dt);
 		//checking collision
 		spaceship_asteroid_collision(&ship, &asteroids[i]);
+	}
+
+	for (int i = 0; i < current_number_of_splited_asteroid; i++) {
+		if (small_asteroids[i].active == 1) {
+			update_asteroid_position(&small_asteroids[i], window.width, window.height, small_asteroids[i].velocity * dt);
+			update_asteroid_angle(&small_asteroids[i], ASTEROID_ANGULAR_VELOCITY * dt);
+			//checking collision
+			spaceship_asteroid_collision(&ship, &small_asteroids[i]);
+		}	
 	}
 
 	//Update bullets status
@@ -272,18 +319,48 @@ void on_idle()
 	for (int i = 0; i < NUMBER_OF_BULLETS; i++) {
 		bullet_arena_collision(&bullets[i] , &arena);
 	}
-	int is_collision;
+
 	//checking collision between asteroids and bullets
 	for (int i = 0; i < NUMBER_OF_BULLETS; i++) {
 		for (int j = 0; j < NUMBER_OF_ASTEROID; j++) {
-			is_collision = bullet_asteroid_collision(&bullets[i], &asteroids[j]);
+			int is_collision = bullet_asteroid_collision(&bullets[i], &asteroids[j]);
 			if (is_collision == 2) {
-				explosion_starts(&asteroids[j], particles,NUMBER_OF_PARTICLE_IN_EXPLOSION, explosion_index);
+				//Start a explosion
+				explosion_starts(&asteroids[j], particles, NUMBER_OF_PARTICLE_IN_EACH_EXPLOSION, explosion_index);
+				explosion_index += NUMBER_OF_PARTICLE_IN_EACH_EXPLOSION;
+				if (explosion_index  >= NUMBER_OF_PARTICLE_IN_EXPLOSION - 20) {
+					explosion_index = 0;
+				}
+				//Update game info
+				update_game_score(&game_log);
+
+				split_asteroid(&asteroids[j], 
+					&small_asteroids[current_number_of_splited_asteroid],
+					&small_asteroids[current_number_of_splited_asteroid + 1],
+					g_screen_height, ASTEROID_SCALE_SIZE);
+				if (current_number_of_splited_asteroid < NUMBER_OF_ASTEROID * 2) {
+					current_number_of_splited_asteroid += 2;
+				}	
+			}
+		}
+	}
+	//checking collision between small asteroids and bullets
+	for (int i = 0; i < NUMBER_OF_BULLETS; i++) {
+		for (int j = 0; j < NUMBER_OF_ASTEROID*2; j++) {
+			int is_collision = bullet_asteroid_collision(&bullets[i], &small_asteroids[j]);
+			if (is_collision == 2) {
+				//Start a explosion
+				explosion_starts(&small_asteroids[j], particles, NUMBER_OF_PARTICLE_IN_EACH_EXPLOSION, explosion_index);
+				explosion_index += NUMBER_OF_PARTICLE_IN_EACH_EXPLOSION;
+				if (explosion_index >= NUMBER_OF_PARTICLE_IN_EXPLOSION - 20) {
+					explosion_index = 0;
+				}
+				//Update game info
 				update_game_score(&game_log);
 			}
 		}
 	}
-	//updating particle
+	//updating puff
 	for (int i = 0; i < NUMBER_OF_PARTICLE_IN_PUFF; i++) {
 		if (puff[i].active == 0) {
 			puff[i].radius = g_screen_width * 0.01;
@@ -301,12 +378,46 @@ void on_idle()
 	for (int i = 0; i < NUMBER_OF_ASTEROID; i++) {
 		asteroid_hit_arena(&asteroids[i], &arena);
 	}
+	//Check collsion between small asteriods and arena
+	for (int i = 0; i < NUMBER_OF_ASTEROID * 2; i++) {
+		asteroid_hit_arena(&small_asteroids[i], &arena);
+	}
 	//check collsion between asteriods
 	for (int i = 0; i < NUMBER_OF_ASTEROID - 1; i++) {
 		for (int j = 1; j < NUMBER_OF_ASTEROID; j++) {
 			if (i != j) {
 				asteroid_hit_asteroid(&asteroids[i], &asteroids[j], &arena);
 			}	
+		}
+	}
+	//check collsion between small asteriods
+	for (int i = 0; i < NUMBER_OF_ASTEROID*2 - 1; i++) {
+		for (int j = 1; j < NUMBER_OF_ASTEROID*2; j++) {
+			if (i != j) {
+				asteroid_hit_asteroid(&small_asteroids[i], &small_asteroids[j], &arena);
+			}
+		}
+	}
+	//check collsion between small asteriods and the big one
+	for (int i = 0; i < NUMBER_OF_ASTEROID ; i++) {
+		for (int j = 0; j < NUMBER_OF_ASTEROID * 2; j++) {
+			asteroid_hit_asteroid(&asteroids[i], &small_asteroids[j], &arena);
+		}
+	}
+
+	//update explosion
+	for (int i = 0; i < explosion_index; i++) {
+		if (particles[i].active == 1) {
+			update_position(particles[i].direction, particles[i].position, 0, particles[i].velocity* dt);
+			particles[i].lifespan -= dt;
+			if (particles[i].lifespan < 0) {
+				particles[i].lifespan = EXPLOSION_LIFESPAN;
+				particles[i].active = 0;
+			}
+		}
+		else {
+			particles[i].position->x = 0;
+			particles[i].position->y = 0;
 		}
 	}
 
@@ -336,11 +447,16 @@ void init_game() {
 	//init the ship, for the bouns feature, we set the ship speed to 0 at the beginning
 	ship2d_t_init(&ship, &shipDirection, &shipPostion, &ship_outline_color, &ship_filling_color,
 			0, SHIP_AV, SHIP_SCALE_SIZE * g_screen_width);
-	//init asteroids
+	//init asteroids, both normal one and the splitted one
 	for (int i = 0; i < NUMBER_OF_ASTEROID; i++) {
 		launch_asteroid(&ship, &asteroids[i], &asteroid_directions[i], &asteroid_Postions[i],
 			window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
 	}
+	for (int i = 0; i < NUMBER_OF_ASTEROID * 2; i++) {
+		launch_asteroid(&ship, &small_asteroids[i], &small_asteroid_directions[i], &small_asteroid_Postions[i],
+			window.width, window.height, ASTEROID_VELOCITY, ASTEROID_ANGULAR_VELOCITY, ASTEROID_SCALE_SIZE);
+	}
+
 	//init bullets
 	for (int i = 0; i < NUMBER_OF_BULLETS; i++) {
 		bullet_init(&bullets[i], &ship, &bullets_direction[i], &bullets_Postion[i], BULLET_VELOCITY);
@@ -353,7 +469,7 @@ void init_game() {
 	}
 
 	explosion_init(&particles, &particles_Postion, &particles_direction, &particles_color, NUMBER_OF_PARTICLE_IN_EXPLOSION,
-		PARTICLE_LIFESPAN,PARTICLE_SIZE,PARTICLE_VELOCITY);
+		EXPLOSION_LIFESPAN,PARTICLE_SIZE,PARTICLE_VELOCITY);
 
 	//for (int i = 0; i < NUMBER_OF_PARTICLE_IN_EXPLOSION; i++) {
 	//	printf("%d,%f,%f\n", i, particles[i].direction[i].x, particles[i].direction[i].y);

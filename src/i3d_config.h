@@ -28,10 +28,10 @@
 #define KEY_ANIT_CLOCKWISE 97
 #define KEY_CLOCKWISE 100
 //Asteroid configuration
-#define ASTEROID_SCALE_SIZE 0.02//
+#define ASTEROID_SCALE_SIZE 0.03//
 #define ASTEROID_VELOCITY 80 // speed in pixel/s, the velocity will be random in the range of +/- 10% of this value
 #define ASTEROID_ANGULAR_VELOCITY 20 // how fast the asterioid rotating
-#define NUMBER_OF_ASTEROID 10 // there will be four waves. each wave will release 1,2,3 and 4 asteroid respectively.
+#define NUMBER_OF_ASTEROID 30 // there will be four waves. each wave will release 1,2,3 and 4 asteroid respectively.
 #define WAVE_INTERVAL 5 // the time between each wave of asteroids
 #define ASTEROID_COLOR_R 0
 #define ASTEROID_COLOR_G 1
@@ -40,18 +40,20 @@
 #define PARTICLE_DECAY 1.0f // the higher this value, the fast puff disappears
 //Bullet configuration
 #define BULLET_VELOCITY 200 // speed in pixel/s, set it large to make the game eaiser
-#define NUMBER_OF_BULLETS 10 // how many bullets you could have at the same time. Large number means you can keep shooting.
+#define NUMBER_OF_BULLETS 10 // how many bullets you could have at the same time. Large number makes the game easy because you could keep shooting.
 
 
 /**
 * NOTE: The parameters below is not configurable. Changing those will impact the game mechanism.
 */
 //particle parameters
-#define NUMBER_OF_PARTICLE_IN_EXPLOSION 50
+#define NUMBER_OF_PARTICLE_IN_EXPLOSION 1000
+#define NUMBER_OF_PARTICLE_IN_EACH_EXPLOSION 20
 #define NUMBER_OF_PARTICLE_IN_PUFF 110
-#define PARTICLE_SIZE 5
+#define PARTICLE_SIZE 7
 #define PARTICLE_VELOCITY 80
-#define PARTICLE_LIFESPAN 10.f
+#define PARTICLE_LIFESPAN 10.0f
+#define EXPLOSION_LIFESPAN 5.0f
 #define MAX_PARTICLES 20;
 //game environment
 #define DEFAULT_WIDTH 300

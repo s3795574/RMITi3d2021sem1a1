@@ -30,7 +30,8 @@ typedef struct asteroid {
 	float velocity; // ship speed in pixel per second
 	float av; // angular velocity, degree per second
 	float current_degree;// postive x is 0 degree
-	float radius; // using this to check 
+	float bounding_circle; // using this to check 
+	float radius;
 	int clockwise; // 0 is clockwise, 1 is counter-clockwise
 	int active;
 	// Hit point
@@ -72,9 +73,6 @@ typedef struct window_t {
 	int height;
 	int full_screen; //0 or 1
 }Game_Window;
-//Those functions have no use, I tried to create function similar to "new" in c++
-extern Vector2D* vec2d_new(float x, float y);
-extern Color* color_new();
 //Set the x and y in a vector. NOTE: the length is yet set, please read i3d_Game_Math.h for more.
 extern void vec2d_t_init(Vector2D* vector2d, float x, float y);
 //Set direction, position and velocity of the ship.
@@ -93,6 +91,7 @@ extern void update_bullet_position(Bullet* bullet, float movement);
 extern void launch_asteroid(Spaceship* ship2d, Asteroid* asteroid, Vector2D* dir, Vector2D* pos, 
 	int width, int height, float vel, float av, float scale_size);
 
+extern void split_asteroid(Asteroid* asteroid , Asteroid* asteroid_left, Asteroid* asteroid_right, int width, float scale_size);
 extern void update_asteroid_position(Asteroid* asteroid, int width, int height, float movement);
 
 extern void update_asteroid_angle(Asteroid* asteroid, float degree);

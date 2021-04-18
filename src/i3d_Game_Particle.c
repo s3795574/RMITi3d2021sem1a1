@@ -39,9 +39,9 @@ void explosion_init(Particle_v2* particle, Vector2D* position, Vector2D* directi
 		color[i].G = rand() % 10 * 0.1;
 		color[i].B = rand() % 10 * 0.1;
 	
-		particle[i].position = position;
-		particle[i].direction = direction;
-		particle[i].color = color;
+		particle[i].position = &position[i];
+		particle[i].direction = &direction[i];
+		particle[i].color = &color[i];
 		particle[i].lifespan = lifespan;
 		particle[i].size = rand() % 50 * 0.01 * size;
 		particle[i].active = 0;
@@ -50,15 +50,41 @@ void explosion_init(Particle_v2* particle, Vector2D* position, Vector2D* directi
 }
 
 void explosion_starts(Asteroid* asteroid, Particle_v2* particles, int array_size, int number_of_explosion) {
-	for (int i = number_of_explosion; i < number_of_explosion + 20; i++) {
-		particles[i].position[i].x = asteroid->position->x;
-		particles[i].position[i].y = asteroid->position->y;
+	for (int i = number_of_explosion; i < number_of_explosion + array_size; i++) {
+		particles[i].position->x = asteroid->position->x;
+		particles[i].position->y = asteroid->position->y;
+		//int random_degree = rand() % 360; //get a random degree
+		//float radian = random_degree / (180.0 / M_PI);//get radian from degree
+		//particles[i].direction->x = cosf(radian);
+		//particles[i].direction->y = sinf(radian);
 		particles[i].active = 1;
-		printf("Dir: %d,%f,%f\n", i, particles[i].direction[i].x, particles[i].direction[i].y);
-		printf("Pos: %d,%f,%f\n", i, particles[i].position[i].x, particles[i].position[i].y);
 	}
 }
 
-void explosion_update(Particle_v2* particle,int array_size, float dt) {
+void explosion_update(Particle_v2* particles,int array_size, float dt) {
+	for (int i = 0; i < array_size; i++) {
+		if (particles[i].active == 1) {
+		printf("Dir: %d,%f,%f\n", i, particles[i].direction->x, particles[i].direction->y);
+		printf("Pos: %d,%f,%f\n", i, particles[i].position->x, particles[i].position->y);
+			float movement = particles[i].velocity * dt;
+			update_position(&particles[i].direction[i], &particles[i].position[i], 0, movement);
+			particles[i].lifespan -= particles[i].lifespan - dt;
+			if (particles[i].lifespan < 0) {
+				particles[i].lifespan = 0;
+				particles[i].active = 0;
+			}
+		}
+	}
+}
 
+void reset_puff(Particle* particle, int array_size) {
+	for (int i = 0; i < array_size; i++) {
+		particle[i].active = 0;
+	}
+}
+
+void reset_explosion(Particle_v2* particle, int array_size) {
+	for (int i = 0; i < array_size; i++) {
+		particle[i].active = 0;
+	}
 }

@@ -32,3 +32,7 @@ extern void explosion_init(Particle_v2* particle, Vector2D* position, Vector2D* 
 extern void explosion_starts(Asteroid* asteroid, Particle_v2* particle, int array_size, int number_of_explosion);
 
 extern void explosion_update(Particle_v2* particle, int array_size, float dt);
+
+extern void reset_puff(Particle* particle, int array_size);
+
+extern void reset_explosion(Particle_v2* particle, int array_size);

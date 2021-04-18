@@ -22,9 +22,10 @@ void normalizing(Vector2D* direction, float originX, float originY);
 float getAngleInDegree(Vector2D* direction);
 //calcualte the new position with the given length
 void update_position(Vector2D* direction, Vector2D* position, float degree,float movement);
-//update the direction according to the current angle
+//changing the direction to a given angle
 void update_direction(Vector2D* direction, float degree);
-
+//Ratating the direction with the given angle
+void rotation(Vector2D* direction, float degree);
 float getDistance(Vector2D* point1, Vector2D* point2);
 //Get a random raito between the given parameter. e.g. 30 with return a value between -0.3 and 0.3.
 float random_raito(int percentage);
